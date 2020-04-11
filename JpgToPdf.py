@@ -1,8 +1,10 @@
 import os
+from PIL import Image
 
 cwd = os.getcwd()
 input_dir = ''
 
+# Get directory for jpg files
 while input_dir == '':
     try:
         print(cwd)
@@ -22,6 +24,12 @@ while input_dir == '':
 path = input_dir + '/' + name
 tex = open(path, 'w')
 
+# Create directory for compressed images
+try:
+    os.mkdir(input_dir + '/compressed')
+except FileExistsError:
+    pass
+
 
 def write_to_tex(los):
     global tex
@@ -29,8 +37,14 @@ def write_to_tex(los):
     tex.write(s)
 
 
+def compress(f_name):
+    img = Image.open(input_dir + '/' + f_name)
+    img = img.resize((2016, 1512), Image.ANTIALIAS)
+    img.save(input_dir + '/compressed/' + f_name, optimize=True, quality=85)
+
+
 write_to_tex([r'\documentclass{article}',
-              r'\usepackage{incgraph, tikz}',
+              r'\usepackage{incgraph}',
               r'\begin{document}'])
 
 
@@ -40,7 +54,8 @@ for p in lop:
         continue
     else:
         print(p)
-        ls.append(r'\incgraph[paper=graphics][angle=270, scale=0.3]{%s}' % p)
+        compress(p)
+        ls.append(r'\incgraph[paper=graphics][angle=270, scale=0.3]{%s}' % ('compressed/' + p))
 
 write_to_tex(ls)
 tex.write(r'\end{document}')

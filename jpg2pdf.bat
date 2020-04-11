@@ -1,0 +1,1 @@
+@START python %~dp0\JpgToPdf.py
