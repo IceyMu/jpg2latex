@@ -9,6 +9,6 @@ for %%i in (%*) do (
 )
 
 :: Pass arguments to Python script
-python argv_example.py %* || pause
+python JpgToPdf.py %* || pause
 
 :end
