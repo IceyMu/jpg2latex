@@ -64,7 +64,7 @@ class Options:
                 self.lop = os.listdir(self.input_dir)
 
             elif j in ('-s', '--scale'):
-                self.scale = self.__next_arg()
+                self.scale = float(self.__next_arg())
                 print("Scale option with: ", self.scale)
 
             elif j in ('-r', '--resize', '--ratio'):

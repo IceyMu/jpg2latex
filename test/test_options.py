@@ -69,27 +69,52 @@ class TestOptions(unittest.TestCase):
             self.assertEqual(self.test_obj.input_dir, 'folder')
             self.assertEqual(self.test_obj.lop, os.listdir('folder'))
 
-
-"""
-    def test_dir(self):
-        self.test_obj = options.Options()
-        for j in ('-d', '--dir', '--directory'):
-            self.test_obj.read_options([j, 'folder'])
-            print(self.test_obj.input_dir)
-            input()
-            self.assertEqual(self.test_obj.input_dir, '.', 'input_dir = {}'.format(self.test_obj.input_dir))
-"""
-"""
-    def test_dir_not_provided(self):
+    def test_directory_no_input(self):
         self.test_obj = options.Options()
         try:
-            self.test_obj.read_options('-d')
+            self.test_obj.read_options(['-d'])
             self.fail('No exception thrown')
         except IndexError:
             pass  # This exception should be thrown
         except:
-            self.fail("Wrong exception type thrown")
-"""
+            self.fail("Wrong type of exception")
+
+    def test_directory_dne(self):
+        self.test_obj = options.Options()
+        try:
+            self.test_obj.read_options(['-d', 'no_folder'])
+            self.fail('No exception thrown')
+        except FileNotFoundError:
+            pass  # This exception should be thrown
+        except:
+            self.fail('Wrong exception thrown')
+
+    def test_scale(self):
+        for j in ('-s', '--scale'):
+            self.test_obj = options.Options()
+            self.test_obj.read_options([j, '0.5'])
+            self.assertEqual(self.test_obj.scale, 0.5)
+
+    def test_scale_no_input(self):
+        try:
+            self.test_obj = options.Options()
+            self.test_obj.read_options(['-s'])
+            self.fail('No exception thrown')
+        except IndexError:
+            pass # This exception should be thrown
+        except:
+            self.fail("Wrong type of exception")
+
+    def test_scale_non_float_input(self):
+        try:
+            self.test_obj = options.Options()
+            self.test_obj.read_options(['-s', 'one'])
+            self.fail('No exception thrown')
+        except ValueError:
+            pass  # This exception should be thrown
+        except not ValueError:
+            self.fail("Wrong type of exception")
+
 
 if __name__ == '__main__':
     unittest.main()
