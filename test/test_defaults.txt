@@ -1,0 +1,6 @@
+verbose false
+cleanup true
+ratio   1
+angle   270
+quality 10
+formats jpg png

@@ -1,10 +1,13 @@
 import os
 
 
+class DefaultFileError(Exception):
+    pass
+
+
 # TODO read  options from default file
 class Options:
-    def __init__(self, r=1, q=0.85, a=270, f=['.png'], v=True, c=True,
-                 d=os.getcwd(), n=os.path.basename(os.getcwd()) + '.tex'):
+    def __init__(self, file='defaults.txt'):
 
         self.__compatible_formats = ('jpg', 'png')
         self.__ind = 0
@@ -12,28 +15,36 @@ class Options:
         self.__name_set = False
         self.__loo = []
 
-        # TODO we don't need so many parameters just initialize them here by reading from the defaults file
-        # the parameters were created to aid testing but they are not used
         self.defaults = {}
-        with open('defaults.txt', 'r') as f:
-            for line in f:
-                (key, val) = line.split()
-                self.defaults[str(key)] = val
+        try:
+            with open(file, 'r') as f:
+                for line in f:
+                    ls = line.split()
+                    if ls[0] == 'formats':
+                        self.defaults['formats'] = ls[1:]
+                    else:
+                        self.defaults[ls[0]] = ls[1]
+        except IndexError:
+            raise DefaultFileError
+        except FileNotFoundError:
+            raise DefaultFileError
+
+        def str_to_bool(s):
+            return s and not s.lower() == 'false'
 
         # input_dir and name do not get an entry for default behaviour
         try:
             self.input_dir = os.getcwd()
             self.lop = os.listdir(self.input_dir)
             self.name = os.path.basename(os.getcwd()) + '.tex'
-            self.verbose = self.defaults['verbose']
-            self.cleanup = self.defaults['cleanup']
-            self.name = self.defaults['name']
-            self.ratio = self.defaults['ratio']
-            self.quality = self.defaults['quality']  # 0.85
-            self.angle = self.defaults['angle']  # 270
+            self.verbose = str_to_bool(self.defaults['verbose'])
+            self.cleanup = str_to_bool(self.defaults['cleanup'])
+            self.ratio = float(self.defaults['ratio'])
+            self.quality = int(self.defaults['quality'])
+            self.angle = float(self.defaults['angle'])
             self.formats = self.defaults['formats']
         except KeyError:
-            pass  # todo add error behaviour for incorrect keys
+            raise DefaultFileError
 
     def __next_arg(self):
         self.__skip_next += 1

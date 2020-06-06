@@ -26,7 +26,7 @@ def write_to_tex(los):
 def compress(f_name):
     # create a compressed version of the picture with the file name f_name in input_dir and save it to compressed
     img = Image.open(opt.input_dir + '/' + f_name)
-    img = img.resize((2016, 1512), Image.ANTIALIAS)
+    img = img.resize((2016, 1512), Image.ANTIALIAS)  # todo implement ratio for resizing these images
     img.save(opt.input_dir + '/compressed/' + f_name, optimize=True, quality=opt.quality)
 
 
