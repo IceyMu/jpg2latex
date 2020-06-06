@@ -1,0 +1,6 @@
+verbose true
+cleanup true
+ratio   1
+quality 85
+angle   270
+formats jpg

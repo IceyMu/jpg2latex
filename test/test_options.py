@@ -4,6 +4,16 @@ import options
 
 
 class TestOptions(unittest.TestCase):
+    def exception_test(self, inputs, error):
+        try:
+            self.test_obj = options.Options()
+            self.test_obj.read_options(inputs)
+            self.fail("No exception thrown")
+        except error:
+            pass  # This exception should be thrown
+        except not error:
+            self.fail("Wrong type of exception")
+
     # Verbose option tests
     def test_verbose(self):
         for j in ('-v', '--verbose'):
@@ -70,50 +80,68 @@ class TestOptions(unittest.TestCase):
             self.assertEqual(self.test_obj.lop, os.listdir('folder'))
 
     def test_directory_no_input(self):
-        self.test_obj = options.Options()
-        try:
-            self.test_obj.read_options(['-d'])
-            self.fail('No exception thrown')
-        except IndexError:
-            pass  # This exception should be thrown
-        except:
-            self.fail("Wrong type of exception")
+        self.exception_test(['-d'], IndexError)
 
     def test_directory_dne(self):
+        self.exception_test(['-d', 'no_folder'], FileNotFoundError)
+
+    def test_ratio(self):
+        for j in ('-r', '--resize', '--ratio'):
+            self.test_obj = options.Options()
+            self.test_obj.read_options([j, '1'])
+            self.assertEqual(self.test_obj.ratio, 1)
+
+    def test_ratio_no_input(self):
+        self.exception_test(['-r'], IndexError)
+
+    def test_ratio_non_float_input(self):
+        self.exception_test(['-r', 'one'], ValueError)
+
+    def test_quality(self):
+        for j in ('-cq', '--quality', '--compression-quality'):
+            self.test_obj = options.Options()
+            self.test_obj.read_options([j, '1'])
+            self.assertEqual(self.test_obj.quality, 1)
+
+    def test_quality_no_input(self):
+        self.exception_test(['-cq'], IndexError)
+
+    def test_quality_non_int_input(self):
+        self.exception_test(['-cq', 'one'], ValueError)
+
+    def test_angle(self):
+        for j in ('-a', '--angle'):
+            self.test_obj = options.Options()
+            self.test_obj.read_options([j, '0'])
+            self.assertEqual(self.test_obj.angle, 0)
+
+    def test_angle_no_input(self):
+        self.exception_test(['-a'], IndexError)
+
+    def test_angle_non_float_input(self):
+        self.exception_test(['-a', 'one'], ValueError)
+
+    def test_formats(self):
+        for j in ('-f', '--formats'):
+            self.test_obj = options.Options()
+            self.test_obj.read_options([j, 'jpg'])
+            self.assertEqual(self.test_obj.formats, ['jpg'])
+
+    def test_formats_no_input(self):
+        self.exception_test(['-f'], IndexError)
+
+    def test_formats_break_for_other_option(self):
         self.test_obj = options.Options()
-        try:
-            self.test_obj.read_options(['-d', 'no_folder'])
-            self.fail('No exception thrown')
-        except FileNotFoundError:
-            pass  # This exception should be thrown
-        except:
-            self.fail('Wrong exception thrown')
+        self.test_obj.read_options(['-f', 'jpg', '-v'])
+        self.assertEqual(self.test_obj.formats, ['jpg'])
 
-    def test_scale(self):
-        for j in ('-s', '--scale'):
-            self.test_obj = options.Options()
-            self.test_obj.read_options([j, '0.5'])
-            self.assertEqual(self.test_obj.scale, 0.5)
+    def test_formats_many_inputs(self):
+        self.test_obj = options.Options()
+        self.test_obj.read_options(['-f', 'jpg', 'png'])
+        self.assertEqual(self.test_obj.formats, ['jpg', 'png'])
 
-    def test_scale_no_input(self):
-        try:
-            self.test_obj = options.Options()
-            self.test_obj.read_options(['-s'])
-            self.fail('No exception thrown')
-        except IndexError:
-            pass # This exception should be thrown
-        except:
-            self.fail("Wrong type of exception")
-
-    def test_scale_non_float_input(self):
-        try:
-            self.test_obj = options.Options()
-            self.test_obj.read_options(['-s', 'one'])
-            self.fail('No exception thrown')
-        except ValueError:
-            pass  # This exception should be thrown
-        except not ValueError:
-            self.fail("Wrong type of exception")
+    def test_formats_unsupported_format(self):
+        self.exception_test(['-f', '.zzz'], ValueError)
 
 
 if __name__ == '__main__':
