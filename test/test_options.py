@@ -30,16 +30,19 @@ class TestOptions(unittest.TestCase):
         self.make_test_obj()
         self.assertFalse(self.test_obj.verbose)
         self.assertTrue(self.test_obj.cleanup)
-        self.assertEqual(self.test_obj.ratio, 1)
-        self.assertEqual(self.test_obj.angle, 270)
-        self.assertEqual(self.test_obj.quality, 10)
-        self.assertEqual(self.test_obj.formats, ['jpg', 'png'])
+        self.assertEqual(1, self.test_obj.resize)
+        self.assertEqual(270, self.test_obj.angle)
+        self.assertEqual(10, self.test_obj.quality)
+        self.assertEqual(['.jpg', '.png'], self.test_obj.formats)
 
     def test_defaults_no_value(self):
-        self.defaults_exception_test('test_no_value.txt')
+        self.defaults_exception_test('test_no_value_default.txt')
 
     def test_defaults_no_default_file(self):
         self.defaults_exception_test('non_existent.txt')
+
+    def test_defaults_missing_key(self):
+        self.defaults_exception_test('test_missing_key_defaults.txt')
 
     # Verbose option tests
     def test_verbose(self):
@@ -82,31 +85,31 @@ class TestOptions(unittest.TestCase):
 
     def test_name_default(self):
         self.make_test_obj()
-        self.assertEqual(self.test_obj.name, os.path.basename(os.getcwd()) + '.tex')
+        self.assertEqual(os.path.basename(os.getcwd()) + '.tex', self.test_obj.name)
 
     def test_name_append_tex(self):
         for j in ('-n', '--name'):
             self.make_test_obj()
             self.test_obj.read_options([j, 'test'])
-            self.assertEqual(self.test_obj.name, 'test.tex')
+            self.assertEqual('test.tex', self.test_obj.name)
 
     def test_name_no_append(self):
         for j in ('-n', '--name'):
             self.make_test_obj()
             self.test_obj.read_options([j, 'test.tex'])
-            self.assertTrue(self.test_obj.name, 'test.tex')
+            self.assertTrue('test.tex', self.test_obj.name)
 
     def test_name_input_dir_change(self):
         self.make_test_obj()
         self.test_obj.read_options(['-d', 'folder'])
-        self.assertEqual(self.test_obj.name, 'folder.tex')
+        self.assertEqual('folder.tex', self.test_obj.name)
 
     def test_directory(self):
         for j in ('-d', '--dir', '--directory'):
             self.make_test_obj()
             self.test_obj.read_options([j, 'folder'])
-            self.assertEqual(self.test_obj.input_dir, 'folder')
-            self.assertEqual(self.test_obj.lop, os.listdir('folder'))
+            self.assertEqual('folder', self.test_obj.input_dir)
+            self.assertEqual(os.listdir('folder'), self.test_obj.lop)
 
     def test_directory_no_input(self):
         self.exception_test(['-d'], IndexError)
@@ -118,7 +121,7 @@ class TestOptions(unittest.TestCase):
         for j in ('-r', '--resize', '--ratio'):
             self.make_test_obj()
             self.test_obj.read_options([j, '1'])
-            self.assertEqual(self.test_obj.ratio, 1)
+            self.assertEqual(1, self.test_obj.resize)
 
     def test_ratio_no_input(self):
         self.exception_test(['-r'], IndexError)
@@ -127,22 +130,22 @@ class TestOptions(unittest.TestCase):
         self.exception_test(['-r', 'one'], ValueError)
 
     def test_quality(self):
-        for j in ('-cq', '--quality', '--compression-quality'):
+        for j in ('-jq', '--quality', '--jpeg-quality'):
             self.make_test_obj()
             self.test_obj.read_options([j, '1'])
-            self.assertEqual(self.test_obj.quality, 1)
+            self.assertEqual(1, self.test_obj.quality)
 
     def test_quality_no_input(self):
-        self.exception_test(['-cq'], IndexError)
+        self.exception_test(['-jq'], IndexError)
 
     def test_quality_non_int_input(self):
-        self.exception_test(['-cq', 'one'], ValueError)
+        self.exception_test(['-jq', 'one'], ValueError)
 
     def test_angle(self):
         for j in ('-a', '--angle'):
             self.make_test_obj()
             self.test_obj.read_options([j, '0'])
-            self.assertEqual(self.test_obj.angle, 0)
+            self.assertEqual(0, self.test_obj.angle)
 
     def test_angle_no_input(self):
         self.exception_test(['-a'], IndexError)
@@ -153,8 +156,18 @@ class TestOptions(unittest.TestCase):
     def test_formats(self):
         for j in ('-f', '--formats'):
             self.make_test_obj()
-            self.test_obj.read_options([j, 'jpg'])
-            self.assertEqual(self.test_obj.formats, ['jpg'])
+            self.test_obj.read_options([j, '.jpg'])
+            self.assertEqual(['.jpg'], self.test_obj.formats)
+
+    def test_formats_add_dot(self):
+        self.make_test_obj()
+        self.test_obj.read_options(['-f', 'jpg'])
+        self.assertEqual(['.jpg'], self.test_obj.formats)
+
+    def test_formats_lower_and_add_dot(self):
+        self.make_test_obj()
+        self.test_obj.read_options(['-f', 'JPG'])
+        self.assertEqual(['.jpg'], self.test_obj.formats)
 
     def test_formats_no_input(self):
         self.exception_test(['-f'], IndexError)
@@ -162,12 +175,12 @@ class TestOptions(unittest.TestCase):
     def test_formats_break_for_other_option(self):
         self.make_test_obj()
         self.test_obj.read_options(['-f', 'jpg', '-v'])
-        self.assertEqual(self.test_obj.formats, ['jpg'])
+        self.assertEqual(['.jpg'], self.test_obj.formats)
 
     def test_formats_many_inputs(self):
         self.make_test_obj()
-        self.test_obj.read_options(['-f', 'jpg', 'png'])
-        self.assertEqual(self.test_obj.formats, ['jpg', 'png'])
+        self.test_obj.read_options(['-f', '.jpg', '.png'])
+        self.assertEqual(['.jpg', '.png'], self.test_obj.formats)
 
     def test_formats_unsupported_format(self):
         self.exception_test(['-f', '.zzz'], ValueError)
