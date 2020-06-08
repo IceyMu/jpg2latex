@@ -1,6 +1,6 @@
 verbose true
 cleanup true
-ratio   0
+resize   1
 quality 85
 angle   270
 formats jpg

@@ -3,10 +3,33 @@ import sys
 import options
 from PIL import Image
 
-
 # Handle arguments
-opt = options.Options()  # todo error handling for this section
-opt.read_options(sys.argv[1:])
+try:
+    opt = options.Options()
+except IndexError as e:
+    print('Defaults file missing a value for ', e)
+    exit(1)
+except FileNotFoundError:
+    print('File defaults.txt not found')
+    exit(1)
+except ValueError:
+    print('Wrong data type for one of the options in the defaults file')
+    exit(1)
+
+try:
+    opt.read_options(sys.argv[1:])
+except IndexError as e:
+    print(e)
+    exit(1)
+except FileNotFoundError as e:
+    print(e)
+    exit(1)
+
+
+if opt.resize == 1 and opt.quality == 100:
+    preserve_image = True
+else:
+    preserve_image = False
 
 
 def vprint(*args):
@@ -29,13 +52,12 @@ vprint('Creating file', path)
 tex = open(path, 'w')
 
 # Create directory for compressed images
-if not opt.resize == 1:
+if not preserve_image:
     try:
         vprint('Creating directory for compressed images')
         os.mkdir(opt.input_dir + '/compressed')
     except FileExistsError:
         vprint('Directory already exists')  # in this case the directory already exists and no action is needed
-        # todo think about what to do with name collisions for existing files
 
 
 def write_to_tex(los):
@@ -49,8 +71,13 @@ def compress(f_name):
     # create a compressed version of the picture with the file name f_name in input_dir and save it to compressed
     vprint('Compressing image', f_name)
     img = Image.open(opt.input_dir + '/' + f_name)
-    img = img.resize((2016, 1512), Image.ANTIALIAS)  # todo implement ratio for resizing these images
-    img.save(opt.input_dir + '/compressed/' + f_name, optimize=True, quality=opt.quality)
+    dims = tuple(map(lambda x: int(x * opt.resize), img.size))
+
+    img = img.resize(dims, Image.ANTIALIAS)
+    if f_name[-4:].lower() == '.jpg':
+        img.save(opt.input_dir + '/compressed/' + f_name, optimize=True, quality=opt.quality)
+    else:
+        img.save(opt.input_dir + '/compressed/' + f_name, optimize=True)
 
 
 # write the preamble
@@ -63,8 +90,12 @@ write_to_tex([r'\documentclass{article}',
 ls = []
 for p in opt.lop:
     vprint('Found image', p)
-    if opt.resize != 1:
-        compress(p)
+    if not preserve_image:
+        try:
+            compress(p)
+        except ValueError:
+            vprint('Value for resize caused ', p, ' to have zero size')
+            continue
     ls.append(r'\incgraph[paper=graphics][angle={%d}, scale=0.3]{%s}' % (opt.angle, 'compressed/' + p))
 
 # finish and close the document
@@ -77,15 +108,13 @@ vprint('Compiling pdf with LaTeX')
 os.chdir(opt.input_dir)
 os.system('pdflatex ' + opt.name)
 
-# TODO cleanup extra files
-# TODO add case for when no ratio == 1 and no cleanup of compressed is necessary
 if opt.cleanup:
     vprint('Removing tex source file')
     os.remove(opt.name)  # remove tex source
     vprint('Removing aux file')
     os.remove(opt.name[:-4] + '.aux')
 
-    if opt.resize != 1:
+    if not preserve_image:
         vprint('Removing scaled images')
         for p in opt.lop:
             os.remove('compressed/' + p)
@@ -93,4 +122,3 @@ if opt.cleanup:
         # remove compressed folder if empty
         if not os.listdir('compressed'):
             os.rmdir('compressed')
-

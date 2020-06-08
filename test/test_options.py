@@ -17,13 +17,13 @@ class TestOptions(unittest.TestCase):
         except not error:
             self.fail("Wrong type of exception")
 
-    def defaults_exception_test(self, file):
+    def defaults_exception_test(self, file, error):
         try:
             options.Options(file)
             self.fail('No exception thrown')
-        except options.DefaultFileError:
+        except error:
             pass  # This exception should be thrown
-        except not options.DefaultFileError:
+        except not error:
             self.fail('Wrong type of exception')
 
     def test_defaults(self):
@@ -36,13 +36,13 @@ class TestOptions(unittest.TestCase):
         self.assertEqual(['.jpg', '.png'], self.test_obj.formats)
 
     def test_defaults_no_value(self):
-        self.defaults_exception_test('test_no_value_default.txt')
+        self.defaults_exception_test('test_no_value_default.txt', IndexError)
 
     def test_defaults_no_default_file(self):
-        self.defaults_exception_test('non_existent.txt')
+        self.defaults_exception_test('non_existent.txt', FileNotFoundError)
 
     def test_defaults_missing_key(self):
-        self.defaults_exception_test('test_missing_key_defaults.txt')
+        self.defaults_exception_test('test_missing_key_defaults.txt', KeyError)
 
     # Verbose option tests
     def test_verbose(self):
