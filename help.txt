@@ -1,1 +1,43 @@
-help text
+Python script for compiling images into a single pdf using latex.
+
+Usage:
+    jpg2latex [options]
+
+Options:
+    -h, --help                      Show help.
+    -v, --verbose                   Give output about the program's operation.
+    -q, --quiet                     Give no output about the program's operation.
+    -c, --cleanup                   Remove temporary files such as latex source file and resized images.
+    -nc, --no-cleanup               Disables cleanup of temporary files.
+    -d, --dir, --directory <path>   Get images from the provided path, default is the current directory.
+    -n, --name <name>               Name for the pdf output, default is name of the image directory.
+    -r, --resize, --ratio <float>   Amount to scale resolution by, for example a value of 0.5 will scale
+                                    a 100x100 source image to 50x50 in the pdf.
+    -jq, --quality, --jpeg-quality <int>
+                                    Sets the quality of the jpeg compression, value should be in [1, 95].
+    -a, --angle <float>             Sets the angle in degrees to rotate the images by in the pdf, a
+                                    value of 270 represents no rotation.
+    -f, --formats <extensions>      Give file extensions of image formats to use from the source
+                                    directory non case sensitive and does not need to be prefixed with a
+                                    '.' supported file extensions are jpg and png.
+
+Default options:
+    Default options are read from the file defaults.txt which must be written in the following format.
+
+    Each line must start with verbose, cleanup, resize, quality, angle, or formats. That line will then set
+    the default value for the corresponding option. Only one option per line.
+
+    Each option must be followed by their value and separated by whitespace.
+
+    To set verbose and cleanup to false you must write false for their value (non case-sensitive)
+
+    Example:
+        verbose true
+        cleanup true
+        resize   0.5
+        quality 85
+        angle   270
+        formats jpg png
+
+Dependencies:
+    Requires Python 3.x with PIL and LaTeX with incgraph installed

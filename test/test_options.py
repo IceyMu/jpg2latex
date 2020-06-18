@@ -1,3 +1,5 @@
+""" Test class for unit testing the Options class"""
+
 import os
 import unittest
 import options

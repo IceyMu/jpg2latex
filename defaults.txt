@@ -1,6 +1,6 @@
 verbose true
 cleanup true
-resize   1
+resize   0.5
 quality 85
 angle   270
-formats jpg
+formats jpg png
