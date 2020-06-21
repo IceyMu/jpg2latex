@@ -24,10 +24,10 @@ Options:
 Default options:
     Default options are read from the file defaults.txt which must be written in the following format.
 
-    Each line must start with verbose, cleanup, resize, quality, angle, or formats. That line will then set
-    the default value for the corresponding option. Only one option per line.
+    Each line must start with verbose, cleanup, resize, quality, angle, or formats. That line will then
+    set the default value for the corresponding option. Only one option per line.
 
-    Each option must be followed by their value and separated by whitespace.
+    Each option must be included and followed by their value and separated by whitespace.
 
     To set verbose and cleanup to false you must write false for their value (non case-sensitive)
 
@@ -41,3 +41,5 @@ Default options:
 
 Dependencies:
     Requires Python 3.x with PIL and LaTeX with incgraph installed
+    incgraph: https://ctan.org/pkg/incgraph
+    PIL: http://pythonware.com/products/pil/

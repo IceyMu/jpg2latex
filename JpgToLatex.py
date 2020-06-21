@@ -3,6 +3,7 @@
 import os
 import sys
 import options
+import subprocess
 from PIL import Image
 
 # Create options object and read from defaults file
@@ -119,7 +120,8 @@ tex.close()
 # compile the document
 vprint('Compiling pdf with LaTeX')
 os.chdir(opt.input_dir)
-os.system('pdflatex ' + opt.name)  # TODO do not print the latex output to console
+with open(os.devnull, 'wb') as devnull:
+    subprocess.run('pdflatex ' + opt.name, stdout=devnull)
 
 # Cleanup extra files that this script creates
 if opt.cleanup:

@@ -8,6 +8,6 @@ for %%i in (%*) do (
 )
 
 :: Pass arguments to Python script
-python %~dp0\JpgToPdf.py %* || pause
+python %~dp0\JpgToLatex.py %* || pause
 
 :end
