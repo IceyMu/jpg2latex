@@ -88,23 +88,9 @@ class Options:
                 KeyError: Raised when one of the options is missing
         """
         self.__compatible_formats = ('.jpg', '.png')
-        self.__ind = 0
-        self.__skip_next = 0
         self.__name_set = False
         self.__loo = []
         self.__defaults = {}
-
-        # Read default options
-        try:
-            with open(file, 'r') as f:
-                for line in f:
-                    ls = line.split()
-                    if ls[0] == 'formats':
-                        self.__defaults['formats'] = ls[1:]
-                    else:
-                        self.__defaults[ls[0]] = ls[1]
-        except IndexError:
-            raise IndexError('Defaults file missing a value for ' + str(ls[0]))
 
         def str_to_bool(s):
             """
@@ -115,17 +101,34 @@ class Options:
             """
             return s and not s.lower() == 'false'
 
-        # unpack dictionary into the appropriate attributes
-        self.input_dir = os.getcwd()
-        self.lop = os.listdir(self.input_dir)
-        self.name = os.path.basename(os.getcwd()) + '.tex'
-        self.verbose = str_to_bool(self.__defaults['verbose'])
-        self.cleanup = str_to_bool(self.__defaults['cleanup'])
-        self.resize = float(self.__defaults['resize'])
-        self.quality = int(self.__defaults['quality'])
-        self.angle = float(self.__defaults['angle'])
-        self.formats = self.__defaults['formats']
-        self.__format_names()
+        # Read default options
+        try:
+            with open(file, 'r') as f:
+                for line in f:
+                    ls = line.split()
+                    if ls[0] == 'formats':
+                        self.__defaults['formats'] = ls[1:]
+                    else:
+                        self.__defaults[ls[0]] = ls[1]
+
+            # unpack dictionary into the appropriate attributes
+            self.input_dir = os.getcwd()
+            self.lop = os.listdir(self.input_dir)
+            self.name = os.path.basename(os.getcwd()) + '.tex'
+            self.verbose = str_to_bool(self.__defaults['verbose'])
+            self.cleanup = str_to_bool(self.__defaults['cleanup'])
+            self.resize = float(self.__defaults['resize'])
+            self.quality = int(self.__defaults['quality'])
+            self.angle = float(self.__defaults['angle'])
+            self.formats = self.__defaults['formats']
+            self.__format_names()
+
+        except IndexError:
+            raise IndexError('Defaults file missing a value for ' + str(ls[0]))
+        except FileNotFoundError:
+            raise FileNotFoundError('File {} not found'.format(file))
+        except ValueError:
+            raise ValueError('Wrong data type for one of the options in the defaults file')
 
     def read_options(self, los):
         """
@@ -178,19 +181,21 @@ class Options:
                 ValueError: Raised when an unsupported format is given for the
                     -f option, also raised when the wrong data type is given
                     for an option.
-
         """
+        skip_next = 0
+        ind = 0
 
         def __next_arg():
-            self.__skip_next += 1
-            return los[self.__ind]
+            nonlocal skip_next, ind
+            skip_next += 1
+            return los[ind]
 
         try:
             for j in los:
-                self.__ind += 1
+                ind += 1
 
-                if self.__skip_next:
-                    self.__skip_next -= 1
+                if skip_next:
+                    skip_next -= 1
                     continue
 
                 if j in ('-v', '--verbose'):
@@ -224,7 +229,7 @@ class Options:
 
                 elif j in ('-f', '--formats'):  # only compatible formats with both PIL and incgraph are jpg and png
                     self.formats = []
-                    rest = los[self.__ind:]
+                    rest = los[ind:]
 
                     if not rest:
                         raise IndexError
@@ -236,7 +241,7 @@ class Options:
                             s = lower_and_add_dot(s)
                             if s in self.__compatible_formats:
                                 self.formats.append(s)
-                                self.__skip_next += 1
+                                skip_next += 1
                                 continue
                             raise ValueError('Unsupported format ', s)
 

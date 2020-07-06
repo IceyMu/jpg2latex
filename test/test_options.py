@@ -6,12 +6,11 @@ import options
 
 
 class TestOptions(unittest.TestCase):
-    def make_test_obj(self):
+    def setUp(self):
         self.test_obj = options.Options('test_defaults.txt')
 
     def exception_test(self, inputs, error):
         try:
-            self.make_test_obj()
             self.test_obj.read_options(inputs)
             self.fail("No exception thrown")
         except error:
@@ -29,7 +28,6 @@ class TestOptions(unittest.TestCase):
             self.fail('Wrong type of exception')
 
     def test_defaults(self):
-        self.make_test_obj()
         self.assertFalse(self.test_obj.verbose)
         self.assertTrue(self.test_obj.cleanup)
         self.assertEqual(1, self.test_obj.resize)
@@ -46,16 +44,18 @@ class TestOptions(unittest.TestCase):
     def test_defaults_missing_key(self):
         self.defaults_exception_test('test_missing_key_defaults.txt', KeyError)
 
+    def test_defaults_wrong_type(self):
+        self.defaults_exception_test('test_wrong_type_defaults.txt', ValueError)
+
     # Verbose option tests
     def test_verbose(self):
         for j in ('-v', '--verbose'):
-            self.make_test_obj()
+            self.setUp()
             self.assertFalse(self.test_obj.verbose)
             self.test_obj.read_options([j])
             self.assertTrue(self.test_obj.verbose)
 
     def test_verbose_no_switch(self):
-        self.make_test_obj()
         self.assertFalse(self.test_obj.verbose)
         self.test_obj.read_options(['-z'])
         self.assertFalse(self.test_obj.verbose)
@@ -63,7 +63,7 @@ class TestOptions(unittest.TestCase):
     # Quiet option test
     def test_quiet(self):
         for j in ('-q', '--quiet'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.verbose = True
             self.assertTrue(self.test_obj.verbose)
             self.test_obj.read_options([j])
@@ -72,7 +72,7 @@ class TestOptions(unittest.TestCase):
     # Cleanup option test
     def test_cleanup(self):
         for j in ('-c', '--cleanup'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.cleanup = False
             self.assertFalse(self.test_obj.cleanup)
             self.test_obj.read_options([j])
@@ -80,35 +80,33 @@ class TestOptions(unittest.TestCase):
 
     def test_no_cleanup(self):
         for j in ('-nc', '--no-cleanup'):
-            self.make_test_obj()
+            self.setUp()
             self.assertTrue(self.test_obj.cleanup)
             self.test_obj.read_options([j])
             self.assertFalse(self.test_obj.cleanup)
 
     def test_name_default(self):
-        self.make_test_obj()
         self.assertEqual(os.path.basename(os.getcwd()) + '.tex', self.test_obj.name)
 
     def test_name_append_tex(self):
         for j in ('-n', '--name'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.read_options([j, 'test'])
             self.assertEqual('test.tex', self.test_obj.name)
 
     def test_name_no_append(self):
         for j in ('-n', '--name'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.read_options([j, 'test.tex'])
             self.assertTrue('test.tex', self.test_obj.name)
 
     def test_name_input_dir_change(self):
-        self.make_test_obj()
         self.test_obj.read_options(['-d', 'folder'])
         self.assertEqual('folder.tex', self.test_obj.name)
 
     def test_directory(self):
         for j in ('-d', '--dir', '--directory'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.read_options([j, 'folder'])
             self.assertEqual('folder', self.test_obj.input_dir)
             self.assertEqual(os.listdir('folder'), self.test_obj.lop)
@@ -121,7 +119,7 @@ class TestOptions(unittest.TestCase):
 
     def test_ratio(self):
         for j in ('-r', '--resize', '--ratio'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.read_options([j, '1'])
             self.assertEqual(1, self.test_obj.resize)
 
@@ -133,9 +131,17 @@ class TestOptions(unittest.TestCase):
 
     def test_quality(self):
         for j in ('-jq', '--quality', '--jpeg-quality'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.read_options([j, '1'])
             self.assertEqual(1, self.test_obj.quality)
+
+    def test_many_options(self):
+        self.test_obj.read_options(['-nc', '-jq', '100', '-r', '1'])
+
+    def test_many_read_options_calls(self):
+        self.test_obj.read_options(['-nc'])
+        self.test_obj.read_options(['-jq', '100'])
+        self.test_obj.read_options(['-v'])
 
     def test_quality_no_input(self):
         self.exception_test(['-jq'], IndexError)
@@ -145,7 +151,7 @@ class TestOptions(unittest.TestCase):
 
     def test_angle(self):
         for j in ('-a', '--angle'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.read_options([j, '0'])
             self.assertEqual(0, self.test_obj.angle)
 
@@ -157,17 +163,15 @@ class TestOptions(unittest.TestCase):
 
     def test_formats(self):
         for j in ('-f', '--formats'):
-            self.make_test_obj()
+            self.setUp()
             self.test_obj.read_options([j, '.jpg'])
             self.assertEqual(['.jpg'], self.test_obj.formats)
 
     def test_formats_add_dot(self):
-        self.make_test_obj()
         self.test_obj.read_options(['-f', 'jpg'])
         self.assertEqual(['.jpg'], self.test_obj.formats)
 
     def test_formats_lower_and_add_dot(self):
-        self.make_test_obj()
         self.test_obj.read_options(['-f', 'JPG'])
         self.assertEqual(['.jpg'], self.test_obj.formats)
 
@@ -175,12 +179,10 @@ class TestOptions(unittest.TestCase):
         self.exception_test(['-f'], IndexError)
 
     def test_formats_break_for_other_option(self):
-        self.make_test_obj()
         self.test_obj.read_options(['-f', 'jpg', '-v'])
         self.assertEqual(['.jpg'], self.test_obj.formats)
 
     def test_formats_many_inputs(self):
-        self.make_test_obj()
         self.test_obj.read_options(['-f', '.jpg', '.png'])
         self.assertEqual(['.jpg', '.png'], self.test_obj.formats)
 
