@@ -8,19 +8,20 @@ import JpgToLatex
 
 
 def reset_directory():
-    # The script changes the working directory a lot this makes writing tests easier
+    # Changes the working directory a lot this makes writing tests easier
     os.chdir(dirname(abspath(__file__)))
+    os.chdir('folder')
 
 
 class TestJpgToLatex(unittest.TestCase):
     def setUp(self):
         reset_directory()
         self.test_obj = options.Options()
-        self.test_obj.read_options('-d folder')
 
     def tearDown(self):
         reset_directory()
-        for j in ['test.pdf', 'test.aux', 'test.log', 'test.tex']:
+        for j in ['.pdf', '.aux', '.log', '.tex']:
+            j = 'folder' + j
             if os.path.exists(j):
                 os.remove(j)
 
@@ -31,13 +32,15 @@ class TestJpgToLatex(unittest.TestCase):
 
     def test_use_default(self):
         JpgToLatex.main(self.test_obj)
-        self.assertTrue(os.path.exists('test.pdf'))
+        self.assertTrue(os.path.exists('folder.pdf'))
+        self.assertGreater(os.path.getsize('folder.pdf'), 0)
 
     def test_preserve_image(self):
         self.test_obj.read_options(['-nc', '-jq', '100', '-r', '1'])
         JpgToLatex.main(self.test_obj)
         self.assertFalse(os.path.exists('compressed'))
-        self.assertTrue(os.path.exists('test.pdf'))
+        self.assertTrue(os.path.exists('folder.pdf'))
+        self.assertGreater(os.path.getsize('folder.pdf'), 0)
 
     def test_name_option(self):
         def cleanup_foo():
@@ -47,7 +50,28 @@ class TestJpgToLatex(unittest.TestCase):
         self.addCleanup(cleanup_foo)
         self.test_obj.read_options(['-n', 'foo'])
         JpgToLatex.main(self.test_obj)
-        self.assertTrue('foo.pdf')
+        self.assertTrue(os.path.exists('foo.pdf'))
+        self.assertGreater(os.path.getsize('foo.pdf'), 0)
+
+    def test_compressed_already_exists(self):
+        if not os.path.exists('compressed'):
+            os.mkdir('compressed')
+        JpgToLatex.main(self.test_obj)
+        self.assertTrue(os.path.exists('folder.pdf'))
+        self.assertGreater(os.path.getsize('folder.pdf'), 0)
+
+    def test_shrink_images(self):
+        self.test_obj.read_options(['-r', '0.5', '-nc'])
+        JpgToLatex.main(self.test_obj)
+        self.assertTrue(os.listdir('compressed'))
+        self.assertTrue(os.path.exists('folder.pdf'))
+        self.assertGreater(os.path.getsize('folder.pdf'), 0)
+
+    def test_zero_size_images(self):
+        self.test_obj.read_options(['-r', '0'])
+        JpgToLatex.main(self.test_obj)
+        self.assertTrue(os.path.exists('folder.pdf'))
+        self.assertEqual(os.path.getsize('folder.pdf'), 0)
 
 
 if __name__ == '__main__':

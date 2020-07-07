@@ -34,12 +34,9 @@ def main(opt):
     tex = open(path, 'w')
 
     # Create directory for compressed images
-    if not preserve_image:
-        try:
-            vprint('Creating directory for compressed images')
-            os.mkdir(opt.input_dir + '/compressed')
-        except FileExistsError:
-            vprint('Directory already exists')  # in this case the directory already exists and no action is needed
+    if not preserve_image and not os.path.exists(opt.input_dir + '/compressed'):
+        vprint('Creating directory for compressed images')
+        os.mkdir(opt.input_dir + '/compressed')
 
     def write_to_tex(los):
         """Writes the collection of strings into the tex file where each element is a line"""
@@ -73,15 +70,21 @@ def main(opt):
 
     # Make each image a page in the tex document
     ls = []
+    zero_size_images = []
     for p in opt.lop:
         vprint('Found image', p)
         if not preserve_image:
             try:
                 resize(p)
+                p = 'compressed/' + p
             except ValueError:
-                vprint('Value for resize caused ', p, ' to have zero size')
+                vprint('Value for resize caused', p, 'to have zero size')
+                zero_size_images.append(p)
                 continue
-        ls.append(r'\incgraph[paper=graphics][angle={%d}, scale=0.3]{%s}' % (opt.angle, 'compressed/' + p))
+        ls.append(r'\incgraph[paper=graphics][angle={%d}, scale=0.3]{%s}' % (opt.angle, p))
+
+    for p in zero_size_images:
+        opt.lop.remove(p)
 
     # Finish and close the latex source
     write_to_tex(ls)
