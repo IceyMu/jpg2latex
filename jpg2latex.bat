@@ -1,4 +1,3 @@
-::@START python %~dp0\JpgToPdf.py
 @echo off
 
 :: Check for help option

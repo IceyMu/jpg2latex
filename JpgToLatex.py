@@ -79,7 +79,7 @@ def main(opt):
                 p = 'compressed/' + p
             except ValueError:
                 vprint('Value for resize caused', p, 'to have zero size')
-                zero_size_images.append(p)
+                zero_size_images.append(p)  # If the resized image was not created we need to not try and clean it up
                 continue
         ls.append(r'\incgraph[paper=graphics][angle={%d}, scale=0.3]{%s}' % (opt.angle, p))
 
