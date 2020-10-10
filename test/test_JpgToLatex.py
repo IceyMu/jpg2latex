@@ -27,7 +27,7 @@ class TestJpgToLatex(unittest.TestCase):
 
         if os.path.exists('compressed'):
             for j in os.listdir('compressed'):
-                os.remove('compressed\\' + j)
+                os.remove('compressed/' + j)
             os.rmdir('compressed')
 
     def test_use_default(self):

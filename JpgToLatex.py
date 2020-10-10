@@ -16,7 +16,7 @@ def main(opt):
     def vprint(*args):
         """use the built-in print function if opt.verbose is set to True"""
         if opt.verbose:
-            print(*tuple(map(str, args)))
+            print(*args)
 
     # Print run options
     vprint('Input directory:', opt.input_dir)
@@ -96,9 +96,9 @@ def main(opt):
     os.chdir(opt.input_dir)
     with open(os.devnull, 'wb') as devnull:
         try:
-            subprocess.check_call('pdflatex ' + opt.name, stdout=devnull)
+            subprocess.check_call('pdflatex ' + opt.name, stdout=devnull, shell=True)
         except subprocess.CalledProcessError:
-            print('There was an error with latex check {}.log error information.'.format(opt.name[:-4]))
+            print('There was an error with latex check {}.log for error information.'.format(opt.name[:-4]))
 
     # Cleanup extra files that this script creates
     if opt.cleanup:

@@ -39,6 +39,9 @@ class Options:
             cleanup: (Boolean) Boolean representing if the program should
                 delete the latex files and modified images when it's done with
                 them.
+            sort: (Boolean) Boolean representing if lop should be sorted
+                alphabetically. If False images will be ordered as given by the
+                operating system.
             resize: (Float) Number representing the amount to scale the
                 resolution of images e.g a value of 0.5 will scale a 100x100
                 source image to 50x50 in the pdf.
@@ -117,6 +120,7 @@ class Options:
             self.name = os.path.basename(os.getcwd()) + '.tex'
             self.verbose = str_to_bool(self.__defaults['verbose'])
             self.cleanup = str_to_bool(self.__defaults['cleanup'])
+            self.sort = str_to_bool(self.__defaults['sort'])
             self.resize = float(self.__defaults['resize'])
             self.quality = int(self.__defaults['quality'])
             self.angle = float(self.__defaults['angle'])
@@ -147,6 +151,12 @@ class Options:
 
             -nc, --no-cleanup
                 Sets cleanup to False.
+
+            -s, --sort
+                Sets sort to True
+
+            -ns --no-sort
+                Sets sort to False
 
             -n, --name
                 Sets name to the following argument.
@@ -210,6 +220,12 @@ class Options:
                 elif j in ('-nc', '--no-cleanup'):
                     self.cleanup = False
 
+                elif j in ('-s', '--sort'):
+                    self.sort = True
+
+                elif j in ('-ns', '--no-sort'):
+                    self.sort = False
+
                 elif j in ('-n', '--name'):
                     self.name = __next_arg()
                     self.__name_set = True
@@ -259,3 +275,7 @@ class Options:
 
         if self.name[-4:] != '.tex':
             self.name += '.tex'
+
+        # sort lop alphabetically if needed
+        if self.sort:
+            self.lop.sort()

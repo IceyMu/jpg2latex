@@ -1,5 +1,6 @@
 verbose false
 cleanup true
+sort true
 resize  h
 angle   270
 quality 10

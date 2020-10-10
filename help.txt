@@ -9,6 +9,8 @@ Options:
     -q, --quiet                     Give no output about the program's operation.
     -c, --cleanup                   Remove temporary files such as latex source file and resized images.
     -nc, --no-cleanup               Disables cleanup of temporary files.
+    -s, --sort                      Sort images alphabetically in pdf output
+    -ns, --no-sort                  Disable automatic sorting of images
     -d, --dir, --directory <path>   Get images from the provided path, default is the current directory.
     -n, --name <name>               Name for the pdf output, default is name of the image directory.
     -r, --resize, --ratio <float>   Amount to scale resolution by, for example a value of 0.5 will scale
@@ -34,7 +36,8 @@ Default options:
     Example:
         verbose true
         cleanup true
-        resize   0.5
+        sort    true
+        resize  0.5
         quality 85
         angle   270
         formats jpg png
@@ -42,4 +45,4 @@ Default options:
 Dependencies:
     Requires Python 3.x with PIL and LaTeX with incgraph installed
     incgraph: https://ctan.org/pkg/incgraph
-    PIL: http://pythonware.com/products/pil/
+    Pillow: https://pypi.org/project/Pillow/

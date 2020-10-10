@@ -85,6 +85,22 @@ class TestOptions(unittest.TestCase):
             self.test_obj.read_options([j])
             self.assertFalse(self.test_obj.cleanup)
 
+    def test_sort(self):
+        for j in ('-s', '--sort'):
+            self.setUp()
+            self.test_obj.sort = False
+            self.assertFalse(self.test_obj.sort)
+            self.test_obj.read_options([j])
+            self.assertTrue(self.test_obj.sort)
+
+    def test_no_sort(self):
+        for j in ('-ns', '--no-sort'):
+            self.setUp()
+            self.test_obj.sort = True
+            self.assertTrue(self.test_obj.sort)
+            self.test_obj.read_options([j])
+            self.assertFalse(self.test_obj.sort)
+
     def test_name_default(self):
         self.assertEqual(os.path.basename(os.getcwd()) + '.tex', self.test_obj.name)
 
@@ -188,6 +204,10 @@ class TestOptions(unittest.TestCase):
 
     def test_formats_unsupported_format(self):
         self.exception_test(['-f', '.zzz'], ValueError)
+
+    def test_sorting(self):
+        self.test_obj.read_options(['-s'])
+        self.assertTrue(self.test_obj.lop == sorted(self.test_obj.lop))
 
 
 if __name__ == '__main__':
